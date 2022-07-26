@@ -60,6 +60,18 @@ const transaction = [
     purchase: 112.9,
     date: new Date("June 04, 69 00:20:18"),
   },
+  {
+    transactionId: 11,
+    customerId: 101,
+    purchase: 110.9,
+    date: new Date("July 05, 69 00:20:18"),
+  },
+  {
+    transactionId: 12,
+    customerId: 105,
+    purchase: 30.9,
+    date: new Date("May 10, 69 00:20:18"),
+  },
 ];
 
 export const fetchTransactionData = () => {

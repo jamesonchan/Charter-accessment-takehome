@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import "./App.css";
 import TableWithRewardPoints from "./components/TableWIthRewardPoints";
-import { useLoadingWithDataFetch } from "./utils/hooks";
+import { useLoadingWithDataFetch } from "./transactionHooks/hooks";
 
 // A retailer offers a rewards program to its customers, awarding points based on each recorded
 // purchase.
@@ -28,32 +28,50 @@ function App() {
   // use map to categorize by Months and customers
   // also use memoization to avoid reduntant updates
   // map structure: {july: { 101:[{transactionId:1, customerId:101, purchase:100, date:july}...]}, june: { 102:[{}...]}}
-  const getTransactionDataWithAwardPointsByMonth = useMemo(() => {
+  const transactionDataWithRewardPoints = useMemo(() => {
     const transactionMap = new Map();
     const resultArr = [];
+
+    // filter by month
+    const filterByMonth = (trans) => {
+      return transaction.filter((item) => {
+        return item.date.getMonth() === trans.date.getMonth();
+      });
+    };
+
+    // filter by customer Id
+    const filterByCustomerId = (arr, trans) => {
+      return arr.filter((item) => {
+        return item.customerId === trans.customerId;
+      });
+    };
+
+    // calculate reward points
+    const calculateRewardPoints = (arr) => {
+      return arr.map((item) => {
+        return {
+          ...item,
+          rewardPoints: getTotalRewardPoints(item.purchase),
+        };
+      });
+    };
 
     // categorize by month
     for (let trans of transaction) {
       const tempMap = new Map();
-      const filteredByMonthArray = transaction.filter((item) => {
-        return item.date.getMonth() === trans.date.getMonth();
-      });
+      const filteredByMonthArray = filterByMonth(trans);
       // categorize by customerId with nested obj in the map
       for (let trans of filteredByMonthArray) {
-        const filteredByCustomerArray = filteredByMonthArray.filter((item) => {
-          return item.customerId === trans.customerId;
-        });
+        const filteredByCustomerArray = filterByCustomerId(
+          filteredByMonthArray,
+          trans
+        );
         // calculate the reward points
-        const customerArrayWithAwardPoints = filteredByCustomerArray.map(
-          (item) => {
-            return {
-              ...item,
-              rewardPoints: getTotalRewardPoints(item.purchase),
-            };
-          }
+        const customerArrayWithRewardPoints = calculateRewardPoints(
+          filteredByCustomerArray
         );
         // use an inner map to categorize customerId
-        tempMap.set(trans.customerId, customerArrayWithAwardPoints);
+        tempMap.set(trans.customerId, customerArrayWithRewardPoints);
 
         transactionMap.set(
           trans.date.toLocaleString("en-US", { month: "long" }),
@@ -61,11 +79,10 @@ function App() {
         );
       }
     }
-    // console.log("transactionMapByMonth", transactionMapByMonth);
+
     for (let [key, value] of transactionMap) {
       resultArr.push({ key, value });
     }
-
     return resultArr;
   }, [transaction]);
 
@@ -75,7 +92,7 @@ function App() {
         <h1>Loading...</h1>
       ) : (
         <TableWithRewardPoints
-          parsedTransaction={getTransactionDataWithAwardPointsByMonth}
+          transactionWithRewardPoints={transactionDataWithRewardPoints}
         />
       )}
     </div>

@@ -1,6 +1,7 @@
-import React, { memo } from "react";
+import React from "react";
+import TableLayout from "../TableLayout";
 
-const TableWithRewardPoints = memo(({ parsedTransaction }) => {
+const TableWithRewardPoints = ({ transactionWithRewardPoints }) => {
   //   get each customer id to render
   const getCustomerId = (item) => {
     const result = [];
@@ -19,43 +20,38 @@ const TableWithRewardPoints = memo(({ parsedTransaction }) => {
 
   return (
     <>
-      {parsedTransaction.map((item) => {
+      {/* map the months header */}
+      {transactionWithRewardPoints.map((item) => {
         const customerIdArr = getCustomerId(item);
         return (
           <div key={item.key}>
             <h1>{item.key}</h1>
+            {/* map the customer Id */}
             {customerIdArr.map((item) => {
               return (
-                <div key={item.key}>
-                  <h2>Customer Id:{item.key}</h2>
-                  <h3>Total Reward Points: {getTotalAwardPoints(item)}</h3>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Transaction Id</th>
-                        <th>Purchase</th>
-                        <th>Date</th>
-                        <th>Reward Points</th>
+                <TableLayout
+                  key={item.key}
+                  item={item}
+                  getTotalAwardPoints={getTotalAwardPoints}
+                >
+                  {/* map the table rows */}
+                  {item.value.map((item) => {
+                    const { transactionId, purchase, date, rewardPoints } =
+                      item;
+                    return (
+                      <tr key={transactionId}>
+                        <td>{transactionId}</td>
+                        <td>${purchase}</td>
+                        <td>
+                          {`${date.toLocaleString("en-US", {
+                            month: "long",
+                          })}  ${date.getDate()}`}
+                        </td>
+                        <td>{rewardPoints}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {item.value.map((item) => {
-                        return (
-                          <tr key={item.transactionId}>
-                            <td>{item.transactionId}</td>
-                            <td>${item.purchase}</td>
-                            <td>
-                              {`${item.date.toLocaleString("en-US", {
-                                month: "long",
-                              })}  ${item.date.getDate()}`}
-                            </td>
-                            <td>{item.rewardPoints}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                    );
+                  })}
+                </TableLayout>
               );
             })}
           </div>
@@ -63,6 +59,6 @@ const TableWithRewardPoints = memo(({ parsedTransaction }) => {
       })}
     </>
   );
-});
+};
 
 export default TableWithRewardPoints;
